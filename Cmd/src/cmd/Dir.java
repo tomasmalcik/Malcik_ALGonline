@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.lang.*;
 
 /**
  *
@@ -23,13 +24,21 @@ public class Dir extends Command{
             files = actualDir.listFiles();
             return dirToString(files);
         }
-        else if (params.length == 2  &&  params[1].equals("-o")) {
-            System.out.println("podminka");
+        if (Arrays.asList(params).contains("-r")){
+            StringBuilder dirRecursive = new StringBuilder();
             files = actualDir.listFiles();
-            Arrays.sort(files,Comparator.comparingLong(File::lastModified));
-            
-//            (files).toString();
-           return dirToString(files);
+            for (File file : files) {
+                if (file.isDirectory()){
+//                    dirRecursive.append("./");
+                    dirRecursive.append(dirToString(new File[]{file})).insert(dirRecursive.length()-2,"/");
+                    dirRecursive.append(execute(file));
+                }
+                else{
+                    dirRecursive.append("└ ");
+                    dirRecursive.append(dirToString(new File[]{file}));
+                }
+            }
+            return dirRecursive.toString();
         }
         return null;
     }
@@ -38,15 +47,13 @@ public class Dir extends Command{
         StringBuilder sb = new StringBuilder("");
         for (File file : files) {
             if(file.isDirectory()){
-                sb.append(String.format("%s%n",file.getName()));
-            }else{
-                sb.append(String.format("%-20s%6d", file.getName(), file.length())); 
+                sb.append(String.format("%s%n", file.getName()));
+            } else {
+                sb.append(String.format("%-20s%6d ", file.getName(), file.length()));
                 sb.append(new Date(file.lastModified())).append("\n");
             }
-            
         }
-        String st = sb.toString();
-        return st;
+        return sb.toString();
     }
     
 }
